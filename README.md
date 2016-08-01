@@ -6,4 +6,4 @@ Note that the original code is in Javascript, which is written by [@turbomaze](h
 
 # Preview
 
-![](https://github.com/gongzhang/fft2d-swift-playground/blob/master/preview.png])
+![](https://github.com/gongzhang/fft2d-swift-playground/blob/master/preview.png?raw=true])
