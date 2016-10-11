@@ -1,6 +1,6 @@
 import Foundation
 
-public class SharedArray<Element>: CustomStringConvertible {
+open class SharedArray<Element>: CustomStringConvertible {
     
     var array: [Element]
     
@@ -9,10 +9,10 @@ public class SharedArray<Element>: CustomStringConvertible {
     }
     
     public init(count: Int, repeatedValue: Element) {
-        array = [Element](count: count, repeatedValue: repeatedValue)
+        array = [Element](repeating: repeatedValue, count: count)
     }
     
-    public subscript (index: Int) -> Element {
+    open subscript (index: Int) -> Element {
         get {
             return array[index]
         }
@@ -21,15 +21,15 @@ public class SharedArray<Element>: CustomStringConvertible {
         }
     }
     
-    public func append(element: Element) {
+    open func append(_ element: Element) {
         array.append(element)
     }
     
-    public var count: Int {
+    open var count: Int {
         return array.count
     }
     
-    public var description: String {
+    open var description: String {
         return array.description
     }
     

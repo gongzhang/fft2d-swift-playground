@@ -1,6 +1,6 @@
 import UIKit
 
-public func fft(input: PixelData, channel: Channel) -> PixelData {
+public func fft(_ input: PixelData, channel: Channel) -> PixelData {
     let len = input.width * input.height
     
     var array = SharedArray(count: len, repeatedValue: Complex())
@@ -10,7 +10,7 @@ public func fft(input: PixelData, channel: Channel) -> PixelData {
     array = flipLeftHalf(array, input.width, input.height)
     
     // render to image
-    let c = array.array.maxElement { $0.0.radiusSquare < $0.1.radiusSquare }
+    let c = array.array.max { $0.0.radiusSquare < $0.1.radiusSquare }
     let logOfMaxMag = log(9e-3 * c!.radius + 1.0)
     
     let data = PixelData(width: input.width, height: input.height)
@@ -23,7 +23,7 @@ public func fft(input: PixelData, channel: Channel) -> PixelData {
     return data
 }
 
-private func halfShift(array: SharedArray<Complex>, _ w: Int, _ h: Int) -> SharedArray<Complex> {
+private func halfShift(_ array: SharedArray<Complex>, _ w: Int, _ h: Int) -> SharedArray<Complex> {
     let ret = SharedArray<Complex>()
     var vOff = h / 2
     for _ in 0 ..< h {
@@ -42,7 +42,7 @@ private func halfShift(array: SharedArray<Complex>, _ w: Int, _ h: Int) -> Share
     return ret;
 }
 
-private func flipLeftHalf(array: SharedArray<Complex>, _ w: Int, _ h: Int) -> SharedArray<Complex> {
+private func flipLeftHalf(_ array: SharedArray<Complex>, _ w: Int, _ h: Int) -> SharedArray<Complex> {
     let ret = SharedArray<Complex>()
     
     for y in 0 ..< h {
@@ -55,7 +55,7 @@ private func flipLeftHalf(array: SharedArray<Complex>, _ w: Int, _ h: Int) -> Sh
     return ret;
 }
 
-private func fft(out: SharedArray<Complex>, _ start: Int, _ input: PixelData, _ channel: Channel, _ offset: Int, _ n: Int, _ s: Int) {
+private func fft(_ out: SharedArray<Complex>, _ start: Int, _ input: PixelData, _ channel: Channel, _ offset: Int, _ n: Int, _ s: Int) {
     if n <= 1 {
         let value = input.getValue(at: offset, of: channel)
         out[start] = Complex(Double(value), 0)

@@ -2,7 +2,7 @@ import Foundation
 
 public let 𝒊 = Complex(0, 1)
 
-public struct Complex: Equatable, Hashable, CustomStringConvertible, IntegerLiteralConvertible, FloatLiteralConvertible {
+public struct Complex: Equatable, Hashable, CustomStringConvertible, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral {
     
     /// The real part of the complex number.
     public var x: Double = 0
@@ -82,48 +82,48 @@ public func ==(c1: Complex, c2: Complex) -> Bool {
 
 public extension Complex {
     
-    @warn_unused_result
+    
     public func conjugate() -> Complex {
         return Complex(x, -y)
     }
     
-    @warn_unused_result
-    public func add(n: Complex) -> Complex {
+    
+    public func add(_ n: Complex) -> Complex {
         return Complex(x + n.x, y + n.y)
     }
     
-    @warn_unused_result
-    public func subtract(n: Complex) -> Complex {
+    
+    public func subtract(_ n: Complex) -> Complex {
         return Complex(x - n.x, y - n.y)
     }
     
-    @warn_unused_result
-    public func multiply(n: Double) -> Complex {
+    
+    public func multiply(_ n: Double) -> Complex {
         return Complex(x * n, y * n)
     }
     
-    @warn_unused_result
-    public func multiply(n: Complex) -> Complex {
+    
+    public func multiply(_ n: Complex) -> Complex {
         return Complex(x * n.x - y * n.y, x * n.y + y * n.x)
     }
     
-    @warn_unused_result
-    public func divide(n: Complex) -> Complex {
+    
+    public func divide(_ n: Complex) -> Complex {
         return self.multiply((n.conjugate().divide(n.radiusSquare)))
     }
     
-    @warn_unused_result
-    public func divide(n: Double) -> Complex {
+    
+    public func divide(_ n: Double) -> Complex {
         return Complex(x / n, y / n)
     }
     
-    @warn_unused_result
-    public func power(n: Double) -> Complex {
+    
+    public func power(_ n: Double) -> Complex {
         return pow(radiusSquare, n / 2) * Complex(cos(n * arg), sin(n * arg))
     }
     
-    @warn_unused_result
-    public func power(n: Int) -> Complex {
+    
+    public func power(_ n: Int) -> Complex {
         switch n {
         case 0: return 1
         case 1: return self
@@ -138,30 +138,30 @@ public extension Complex {
         y = -y
     }
     
-    public mutating func addInPlace(n: Complex) {
+    public mutating func addInPlace(_ n: Complex) {
         x += n.x
         y += n.y
     }
     
-    public mutating func subtractInPlace(n: Complex) {
+    public mutating func subtractInPlace(_ n: Complex) {
         x -= n.x
         y -= n.y
     }
     
-    public mutating func multiplyInPlace(n: Double) {
+    public mutating func multiplyInPlace(_ n: Double) {
         x *= n
         y *= n
     }
     
-    public mutating func multiplyInPlace(n: Complex) {
+    public mutating func multiplyInPlace(_ n: Complex) {
         self = self.multiply(n)
     }
     
-    public mutating func divideInPlace(n: Complex) {
+    public mutating func divideInPlace(_ n: Complex) {
         self = self.divide(n)
     }
     
-    public mutating func divideInPlace(n: Double) {
+    public mutating func divideInPlace(_ n: Double) {
         x /= n
         y /= n
     }

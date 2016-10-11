@@ -7,7 +7,7 @@ public enum Channel {
     case alpha
     case grayscale
     
-    func extract(base: UnsafePointer<UInt8>) -> UInt8 {
+    func extract(_ base: UnsafePointer<UInt8>) -> UInt8 {
         switch self {
         case .red:      return base[0]
         case .green:    return base[1]
@@ -20,7 +20,7 @@ public enum Channel {
         }
     }
     
-    func fill(base: UnsafeMutablePointer<UInt8>, with value: UInt8) {
+    func fill(_ base: UnsafeMutablePointer<UInt8>, with value: UInt8) {
         switch self {
         case .red:      base[0] = value
         case .green:    base[1] = value
@@ -35,69 +35,69 @@ public enum Channel {
     }
 }
 
-public class PixelData: CustomStringConvertible {
+open class PixelData: CustomStringConvertible {
     
-    public let width: Int
-    public let height: Int
+    open let width: Int
+    open let height: Int
     
-    private let ptr: UnsafeMutablePointer<UInt8>
-    private let len: Int
+    fileprivate let ptr: UnsafeMutablePointer<UInt8>
+    fileprivate let len: Int
     
     public init(width: Int, height: Int) {
         self.width = width
         self.height = height
         self.len = width * height * 4
-        self.ptr = UnsafeMutablePointer<UInt8>.alloc(len)
+        self.ptr = UnsafeMutablePointer<UInt8>.allocate(capacity: len)
     }
     
     public convenience init(image: UIImage) {
-        func normalize(length: Int) -> Int {
+        func normalize(_ length: Int) -> Int {
             return 1 << Int(ceil(log2(Double(length))))
         }
         
-        var cgimage = image.CGImage!
-        let w0 = CGImageGetWidth(cgimage), h0 = CGImageGetHeight(cgimage)
+        var cgimage = image.cgImage!
+        let w0 = cgimage.width, h0 = cgimage.height
         let nw = normalize(w0), nh = normalize(h0)
         if nw != w0 || nh != h0 {
             UIGraphicsBeginImageContext(CGSize(width: nw, height: nh))
-            image.drawInRect(CGRect(x: 0, y: 0, width: nw, height: nh))
+            image.draw(in: CGRect(x: 0, y: 0, width: nw, height: nh))
             let newImage = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
-            cgimage = newImage.CGImage!
+            cgimage = (newImage?.cgImage!)!
         }
         
         self.init(width: nw, height: nh)
         
-        let pixelData = CGDataProviderCopyData(CGImageGetDataProvider(cgimage))
+        let pixelData = cgimage.dataProvider?.data
         let src_ptr: UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
         for i in 0..<len {
             ptr[i] = src_ptr[i]
         }
     }
     
-    public func getValue(at offset: Int, of channel: Channel) -> UInt8 {
-        return channel.extract(ptr.advancedBy(offset * 4))
+    open func getValue(at offset: Int, of channel: Channel) -> UInt8 {
+        return channel.extract(ptr.advanced(by: offset * 4))
     }
     
-    public func setValue(value: UInt8, at offset: Int, of channel: Channel) {
-        channel.fill(ptr.advancedBy(offset * 4), with: value)
+    open func setValue(_ value: UInt8, at offset: Int, of channel: Channel) {
+        channel.fill(ptr.advanced(by: offset * 4), with: value)
     }
     
-    public func getValue(at point: (x: Int, y: Int), of channel: Channel) -> UInt8 {
+    open func getValue(at point: (x: Int, y: Int), of channel: Channel) -> UInt8 {
         return getValue(at: point.x + point.y * width, of: channel)
     }
     
-    public func setValue(value: UInt8, at point: (x: Int, y: Int), of channel: Channel) {
+    open func setValue(_ value: UInt8, at point: (x: Int, y: Int), of channel: Channel) {
         setValue(value, at: point.x + point.y * width, of: channel)
     }
     
-    public func clear(channel: Channel, with value: UInt8) {
+    open func clear(_ channel: Channel, with value: UInt8) {
         for i in 0 ..< width * height {
             setValue(value, at: i, of: channel)
         }
     }
     
-    public func desaturate() {
+    open func desaturate() {
         for y in 0..<height {
             for x in 0..<width {
                 let grayscale = getValue(at: (x, y), of: .grayscale)
@@ -106,27 +106,27 @@ public class PixelData: CustomStringConvertible {
         }
     }
     
-    public func generateImage() -> UIImage {
-        let dst_ptr = UnsafeMutablePointer<UInt8>.alloc(len)
+    open func generateImage() -> UIImage {
+        let dst_ptr = UnsafeMutablePointer<UInt8>.allocate(capacity: len)
         for i in 0..<len {
             dst_ptr[i] = ptr[i]
         }
         
-        let provider = CGDataProviderCreateWithData(nil, ptr, len) { _, data, size in
-            let raw = unsafeBitCast(data, UnsafeMutablePointer<UInt8>.self)
-            raw.dealloc(size)
+        let provider = CGDataProvider(dataInfo: nil, data: ptr, size: len) { _, data, size in
+            let raw = unsafeBitCast(data, to: UnsafeMutablePointer<UInt8>.self)
+            raw.deallocate(capacity: size)
         }
         
-        let image = CGImageCreate(width, height, 8, 32, 4 * width, CGColorSpaceCreateDeviceRGB(), CGBitmapInfo.ByteOrderDefault, provider, nil, false, CGColorRenderingIntent.RenderingIntentDefault)!
-        return UIImage(CGImage: image)
+        let image = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: 4 * width, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo(), provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
+        return UIImage(cgImage: image)
     }
     
-    public var description: String {
+    open var description: String {
         return "RGBA[\(width)x\(height)]"
     }
     
     deinit {
-        ptr.dealloc(len)
+        ptr.deallocate(capacity: len)
     }
     
 }
